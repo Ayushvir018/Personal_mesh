@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Personal Mesh – Your Own Build Stack</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap');
+
+  :root {
+    --bg: #f6f8ff;
+    --white: #ffffff;
+    --border: #e4e9f5;
+    --text: #1a2236;
+    --text2: #5a6a85;
+    --text3: #9aaabf;
+
+    --c1: #3b82f6;
+    --c2: #8b5cf6;
+    --c3: #10b981;
+    --c4: #f59e0b;
+    --c5: #ec4899;
+    --c6: #06b6d4;
+
+    --c1-bg: #eff6ff;
+    --c2-bg: #f5f3ff;
+    --c3-bg: #ecfdf5;
+    --c4-bg: #fffbeb;
+    --c5-bg: #fdf2f8;
+    --c6-bg: #ecfeff;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    color: var(--text);
+    padding: 40px 20px 60px;
+    min-height: 100vh;
+  }
+
+  .wrap { max-width: 880px; margin: 0 auto; }
+
+  /* HEADER */
+  .hdr { text-align: center; margin-bottom: 40px; }
+  .hdr-pill {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+    color: white; border-radius: 20px;
+    padding: 6px 16px; font-size: 12px; font-weight: 600;
+    margin-bottom: 16px;
+    box-shadow: 0 4px 12px rgba(139,92,246,0.25);
+  }
+  .hdr h1 {
+    font-size: clamp(22px, 4vw, 32px);
+    font-weight: 700; letter-spacing: -0.5px; color: var(--text);
+  }
+  .hdr h1 span { color: var(--c2); }
+  .hdr p { margin-top: 8px; font-size: 14px; color: var(--text2); }
+
+  /* YOU BUILD badge */
+  .you-build {
+    display: inline-flex; align-items: center; gap: 5px;
+    background: linear-gradient(135deg,#fde68a,#fbbf24);
+    color: #92400e; font-size: 10px; font-weight: 700;
+    padding: 3px 9px; border-radius: 5px;
+    letter-spacing: 0.4px; margin-top: 8px;
+  }
+  .third-party {
+    display: inline-flex; align-items: center; gap: 5px;
+    background: #f0f2f8; color: #4a5a80;
+    font-size: 10px; font-weight: 600;
+    padding: 3px 9px; border-radius: 5px;
+    margin-top: 8px;
+  }
+
+  /* PHASE HEADER */
+  .phase-label {
+    display: flex; align-items: center; gap: 10px;
+    margin-bottom: 14px; margin-top: 32px;
+  }
+  .phase-num {
+    width: 28px; height: 28px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 700; flex-shrink: 0; color: #fff;
+  }
+  .phase-title { font-size: 13px; font-weight: 600; }
+  .phase-rule { flex: 1; height: 1px; background: var(--border); }
+
+  /* CARDS */
+  .cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 12px; }
+
+  .card {
+    background: var(--white);
+    border: 1.5px solid var(--border);
+    border-radius: 14px; padding: 18px;
+    transition: box-shadow 0.2s, transform 0.2s;
+    position: relative;
+  }
+  .card:hover { box-shadow: 0 6px 20px rgba(0,0,0,0.07); transform: translateY(-2px); }
+
+  /* YOU BUILD glow */
+  .card.own {
+    border-color: #fcd9a8;
+    background: linear-gradient(135deg, #fffbf0 0%, #fff 60%);
+  }
+  .card.own::before {
+    content: '🔨 You Build This';
+    position: absolute; top: -1px; right: 14px;
+    background: linear-gradient(135deg,#fbbf24,#f59e0b);
+    color: #fff; font-size: 9px; font-weight: 700;
+    padding: 3px 10px; border-radius: 0 0 7px 7px;
+    letter-spacing: 0.3px;
+  }
+
+  .card-top { display: flex; align-items: flex-start; gap: 12px; margin-bottom: 10px; }
+  .card-icon {
+    width: 38px; height: 38px; border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px; flex-shrink: 0;
+  }
+  .card-name {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px; font-weight: 600; margin-bottom: 2px;
+  }
+  .card-role { font-size: 11px; color: var(--text2); }
+  .card-desc { font-size: 12px; color: var(--text2); line-height: 1.65; margin-bottom: 10px; }
+
+  .card-install {
+    background: #f4f6fb; border: 1px solid var(--border);
+    border-radius: 7px; padding: 8px 10px;
+    font-family: 'JetBrains Mono', monospace; font-size: 11px; color: #3a4a62;
+    display: flex; align-items: center; gap: 6px; flex-wrap: wrap;
+  }
+  .card-install .prompt { color: var(--text3); }
+
+  /* sub-tools inside own cards */
+  .sub-tools { display: flex; flex-direction: column; gap: 6px; margin-bottom: 10px; }
+  .sub-tool {
+    background: #fdf6e3; border: 1px solid #fde68a;
+    border-radius: 7px; padding: 7px 10px;
+    font-size: 11px; color: #92400e;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .sub-tool .st-name {
+    font-family: 'JetBrains Mono', monospace; font-size: 11px;
+    font-weight: 600; min-width: 90px;
+  }
+  .sub-tool .st-role { color: #b45309; font-size: 10.5px; }
+
+  /* PHASE COLORS */
+  .p1 .phase-num { background: var(--c1); }
+  .p1 .card { border-color: #dbeafe; }
+  .p1 .card-icon { background: var(--c1-bg); }
+  .p1 .card-name { color: var(--c1); }
+
+  .p2 .phase-num { background: var(--c2); }
+  .p2 .card { border-color: #ede9fe; }
+  .p2 .card-icon { background: var(--c2-bg); }
+  .p2 .card-name { color: var(--c2); }
+
+  .p3 .phase-num { background: var(--c3); }
+  .p3 .card { border-color: #d1fae5; }
+  .p3 .card-icon { background: var(--c3-bg); }
+  .p3 .card-name { color: var(--c3); }
+
+  .p4 .phase-num { background: var(--c4); }
+  .p4 .card { border-color: #fde68a; }
+  .p4 .card-icon { background: var(--c4-bg); }
+  .p4 .card-name { color: var(--c4); }
+
+  .p5 .phase-num { background: var(--c5); }
+  .p5 .card { border-color: #fce7f3; }
+  .p5 .card-icon { background: var(--c5-bg); }
+  .p5 .card-name { color: var(--c5); }
+
+  /* LEGEND */
+  .legend {
+    display: flex; gap: 14px; flex-wrap: wrap;
+    justify-content: center; margin-bottom: 28px;
+  }
+  .legend-item {
+    display: flex; align-items: center; gap: 7px;
+    font-size: 12px; color: var(--text2);
+  }
+  .legend-dot { width: 10px; height: 10px; border-radius: 3px; }
+
+  /* INSTALL BOX */
+  .install-all {
+    margin-top: 32px; background: #1a2236;
+    border-radius: 14px; padding: 22px 24px; color: #e8f0ff;
+  }
+  .ia-title {
+    font-size: 11px; font-family: 'JetBrains Mono', monospace;
+    color: #4a5a80; margin-bottom: 14px; letter-spacing: 1px; text-transform: uppercase;
+  }
+  .ia-block { margin-bottom: 14px; }
+  .ia-section { font-size: 10px; color: #4ade80; font-family: 'JetBrains Mono', monospace; margin-bottom: 6px; }
+  .ia-line {
+    font-family: 'JetBrains Mono', monospace; font-size: 12.5px;
+    line-height: 2; display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap;
+  }
+  .ia-prompt { color: #4ade80; }
+  .ia-cmd { color: #e8f0ff; }
+  .ia-comment { color: #3a4a62; font-size: 11px; }
+
+  /* ROADMAP */
+  .roadmap {
+    margin-top: 28px; background: var(--white);
+    border: 1.5px solid var(--border); border-radius: 14px; padding: 20px 22px;
+  }
+  .rm-title { font-size: 13px; font-weight: 700; color: var(--text); margin-bottom: 16px; }
+  .rm-step {
+    display: flex; align-items: flex-start; gap: 14px;
+    padding: 10px 0; border-bottom: 1px solid var(--border);
+  }
+  .rm-step:last-child { border-bottom: none; }
+  .rm-dot {
+    width: 28px; height: 28px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px; font-weight: 700; flex-shrink: 0; color: white; margin-top: 1px;
+  }
+  .rm-week { font-size: 10px; font-family: 'JetBrains Mono', monospace; color: var(--text3); margin-bottom: 2px; }
+  .rm-task { font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: 2px; }
+  .rm-desc { font-size: 11.5px; color: var(--text2); line-height: 1.5; }
+  .rm-own {
+    display: inline-block; font-size: 10px; font-weight: 700;
+    background: #fde68a; color: #92400e;
+    padding: 1px 7px; border-radius: 4px; margin-left: 6px; vertical-align: middle;
+  }
+
+  @media (max-width: 500px) {
+    .cards { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- HEADER -->
+  <div class="hdr">
+    <div class="hdr-pill">🔨 Your Own Build — No Black Boxes</div>
+    <h1>Personal Mesh<br><span>Custom-Built Tech Stack</span></h1>
+    <p>Voice-to-Text and LLM built by you using PyAudio + PyTorch. Everything else stays minimal.</p>
+  </div>
+
+  <!-- LEGEND -->
+  <div class="legend">
+    <div class="legend-item">
+      <div class="legend-dot" style="background:#fbbf24"></div>
+      You build this yourself
+    </div>
+    <div class="legend-item">
+      <div class="legend-dot" style="background:#e4e9f5;border:1px solid #c0cce0"></div>
+      Use existing library
+    </div>
+  </div>
+
+  <!-- PHASE 1: VOICE INPUT -->
+  <div class="p1">
+    <div class="phase-label">
+      <div class="phase-num">1</div>
+      <div class="phase-title" style="color:var(--c1)">Voice Input — Built by You</div>
+      <div class="phase-rule"></div>
+    </div>
+    <div class="cards">
+
+      <div class="card own">
+        <div class="card-top">
+          <div class="card-icon" style="background:#eff6ff">🎙️</div>
+          <div>
+            <div class="card-name" style="color:var(--c1)">Your STT Pipeline</div>
+            <div class="card-role">Mic → Audio → Text</div>
+          </div>
+        </div>
+        <div class="card-desc">You capture audio with PyAudio, clean it up with NumPy, then convert to text using a simple model you train yourself.</div>
+        <div class="sub-tools">
+          <div class="sub-tool"><span class="st-name">PyAudio</span><span class="st-role">Captures mic input in real-time</span></div>
+          <div class="sub-tool"><span class="st-name">NumPy</span><span class="st-role">Cleans & formats the audio wave</span></div>
+          <div class="sub-tool"><span class="st-name">librosa</span><span class="st-role">Converts audio → MFCC features</span></div>
+          <div class="sub-tool"><span class="st-name">PyTorch</span><span class="st-role">Your own tiny STT model</span></div>
+        </div>
+        <div class="card-install"><span class="prompt">$</span> pip install pyaudio numpy librosa torch</div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- PHASE 2: YOUR OWN LLM -->
+  <div class="p4">
+    <div class="phase-label">
+      <div class="phase-num">2</div>
+      <div class="phase-title" style="color:var(--c4)">Your Own Mini-LLM — Built by You</div>
+      <div class="phase-rule"></div>
+    </div>
+    <div class="cards">
+
+      <div class="card own">
+        <div class="card-top">
+          <div class="card-icon" style="background:#fffbeb">🧠</div>
+          <div>
+            <div class="card-name" style="color:var(--c4)">Your Mini Transformer</div>
+            <div class="card-role">Text → Smart Response</div>
+          </div>
+        </div>
+        <div class="card-desc">A tiny GPT-style model you build and train yourself on your own data. Not as smart as ChatGPT but 100% yours.</div>
+        <div class="sub-tools">
+          <div class="sub-tool"><span class="st-name">PyTorch</span><span class="st-role">Build & train your model</span></div>
+          <div class="sub-tool"><span class="st-name">Transformers</span><span class="st-role">Tokenizer + base architecture</span></div>
+          <div class="sub-tool"><span class="st-name">Datasets (HF)</span><span class="st-role">Load training data easily</span></div>
+          <div class="sub-tool"><span class="st-name">tqdm</span><span class="st-role">See training progress bar</span></div>
+        </div>
+        <div class="card-install"><span class="prompt">$</span> pip install torch transformers datasets tqdm</div>
+      </div>
+
+      <div class="card own">
+        <div class="card-top">
+          <div class="card-icon" style="background:#fffbeb">⚡</div>
+          <div>
+            <div class="card-name" style="color:var(--c4)">Fine-tune Option</div>
+            <div class="card-role">Faster path to smart AI</div>
+          </div>
+        </div>
+        <div class="card-desc">Instead of training from scratch, take a tiny model and fine-tune it on your personal data. Faster and smarter result.</div>
+        <div class="sub-tools">
+          <div class="sub-tool"><span class="st-name">Unsloth</span><span class="st-role">Fine-tune 2x faster, less RAM</span></div>
+          <div class="sub-tool"><span class="st-name">PEFT / LoRA</span><span class="st-role">Train only a small part of model</span></div>
+          <div class="sub-tool"><span class="st-name">TinyLlama</span><span class="st-role">1.1B param — runs on laptop</span></div>
+        </div>
+        <div class="card-install"><span class="prompt">$</span> pip install unsloth peft</div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- PHASE 3: MEMORY -->
+  <div class="p3">
+    <div class="phase-label">
+      <div class="phase-num">3</div>
+      <div class="phase-title" style="color:var(--c3)">Memory & Storage — Use Existing</div>
+      <div class="phase-rule"></div>
+    </div>
+    <div class="cards">
+
+      <div class="card">
+        <div class="card-top">
+          <div class="card-icon" style="background:var(--c3-bg)">🔢</div>
+          <div>
+            <div class="card-name" style="color:var(--c3)">Sentence-Transformers</div>
+            <div class="card-role">Text → Embeddings</div>
+          </div>
+        </div>
+        <div class="card-desc">Converts text into numbers so ChromaDB can search memories. Just one line to use — no need to build this yourself.</div>
+        <div class="card-install"><span class="prompt">$</span> pip install sentence-transformers</div>
+      </div>
+
+      <div class="card">
+        <div class="card-top">
+          <div class="card-icon" style="background:var(--c3-bg)">🧠</div>
+          <div>
+            <div class="card-name" style="color:var(--c3)">ChromaDB</div>
+            <div class="card-role">AI Memory Store</div>
+          </div>
+        </div>
+        <div class="card-desc">Saves and searches your memories locally. Works with your embeddings. No setup needed — just install and go.</div>
+        <div class="card-install"><span class="prompt">$</span> pip install chromadb</div>
+      </div>
+
+      <div class="card">
+        <div class="card-top">
+          <div class="card-icon" style="background:var(--c3-bg)">🗄️</div>
+          <div>
+            <div class="card-name" style="color:var(--c3)">SQLite</div>
+            <div class="card-role">Profile & Health Data</div>
+          </div>
+        </div>
+        <div class="card-desc">Already in Python! Stores your profile, health metrics, habits, and logs. Zero install needed.</div>
+        <div class="card-install"><span class="prompt">>>></span> import sqlite3 <span style="color:#9aaabf"># built-in!</span></div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- PHASE 4: UI -->
+  <div class="p5">
+    <div class="phase-label">
+      <div class="phase-num">4</div>
+      <div class="phase-title" style="color:var(--c5)">User Interface — Use Existing</div>
+      <div class="phase-rule"></div>
+    </div>
+    <div class="cards">
+
+      <div class="card">
+        <div class="card-top">
+          <div class="card-icon" style="background:var(--c5-bg)">🖥️</div>
+          <div>
+            <div class="card-name" style="color:var(--c5)">Streamlit</div>
+            <div class="card-role">Chat + Dashboard UI</div>
+          </div>
+        </div>
+        <div class="card-desc">Makes a real app from your Python script. Chat box, buttons, graphs — all in ~5 lines of code. Perfect for beginners.</div>
+        <div class="card-install"><span class="prompt">$</span> pip install streamlit</div>
+      </div>
+
+      <div class="card">
+        <div class="card-top">
+          <div class="card-icon" style="background:var(--c5-bg)">📊</div>
+          <div>
+            <div class="card-name" style="color:var(--c5)">Plotly</div>
+            <div class="card-role">Health Charts</div>
+          </div>
+        </div>
+        <div class="card-desc">Beautiful interactive charts for calories, habits, mood trends. One line per chart, works inside Streamlit.</div>
+        <div class="card-install"><span class="prompt">$</span> pip install plotly</div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- INSTALL ALL -->
+  <div class="install-all">
+    <div class="ia-title"># your complete install — copy & paste</div>
+
+    <div class="ia-block">
+      <div class="ia-section"># 🔨 things you build (tools you need to build with)</div>
+      <div class="ia-line">
+        <span class="ia-prompt">$</span>
+        <span class="ia-cmd">pip install pyaudio numpy librosa torch transformers datasets tqdm unsloth peft</span>
+      </div>
+    </div>
+
+    <div class="ia-block">
+      <div class="ia-section"># 📦 ready-made tools (just use them)</div>
+      <div class="ia-line">
+        <span class="ia-prompt">$</span>
+        <span class="ia-cmd">pip install chromadb sentence-transformers streamlit plotly</span>
+      </div>
+    </div>
+
+    <div class="ia-block">
+      <div class="ia-section"># ✅ sqlite3 is already in python — no install needed</div>
+    </div>
+  </div>
+
+  <!-- ROADMAP -->
+  <div class="roadmap">
+    <div class="rm-title">🗺️ Your Build Order</div>
+
+    <div class="rm-step">
+      <div class="rm-dot" style="background:var(--c1)">1</div>
+      <div>
+        <div class="rm-week">Week 1</div>
+        <div class="rm-task">Record audio with PyAudio <span class="rm-own">You Build</span></div>
+        <div class="rm-desc">Capture mic input → save as WAV file → display the audio wave with NumPy. First win!</div>
+      </div>
+    </div>
+
+    <div class="rm-step">
+      <div class="rm-dot" style="background:var(--c2)">2</div>
+      <div>
+        <div class="rm-week">Week 2</div>
+        <div class="rm-task">Convert audio to features with librosa <span class="rm-own">You Build</span></div>
+        <div class="rm-desc">Turn WAV → MFCC features → feed into a tiny PyTorch classifier. Start with just 5–10 words.</div>
+      </div>
+    </div>
+
+    <div class="rm-step">
+      <div class="rm-dot" style="background:var(--c4)">3</div>
+      <div>
+        <div class="rm-week">Week 3</div>
+        <div class="rm-task">Build your tiny text model with PyTorch <span class="rm-own">You Build</span></div>
+        <div class="rm-desc">Start with a simple RNN or tiny Transformer. Train on your own text data. Get it to complete sentences.</div>
+      </div>
+    </div>
+
+    <div class="rm-step">
+      <div class="rm-dot" style="background:var(--c3)">4</div>
+      <div>
+        <div class="rm-week">Week 4</div>
+        <div class="rm-task">Add ChromaDB memory</div>
+        <div class="rm-desc">Save your conversations → AI starts remembering. Combine with your text model for smart replies.</div>
+      </div>
+    </div>
+
+    <div class="rm-step">
+      <div class="rm-dot" style="background:var(--c5)">5</div>
+      <div>
+        <div class="rm-week">Week 5</div>
+        <div class="rm-task">Wrap it in Streamlit</div>
+        <div class="rm-desc">Connect everything — voice input, your LLM, memory — into one chat interface. Your Personal Mesh is alive! 🎉</div>
+      </div>
+    </div>
+
+  </div>
+
+</div>
+</body>
+</html>

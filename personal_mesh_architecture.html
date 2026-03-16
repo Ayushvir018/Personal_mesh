@@ -1,0 +1,794 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Personal Mesh – Multimodal Context-Aware AI Architecture</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=DM+Sans:wght@300;400;500;600&display=swap');
+
+  :root {
+    --bg: #080c14;
+    --surface: #0d1525;
+    --surface2: #111e33;
+    --border: rgba(255,255,255,0.07);
+    --input-color: #00d4ff;
+    --input-bg: rgba(0,212,255,0.07);
+    --process-color: #a78bfa;
+    --process-bg: rgba(167,139,250,0.07);
+    --storage-color: #34d399;
+    --storage-bg: rgba(52,211,153,0.07);
+    --intel-color: #fb923c;
+    --intel-bg: rgba(251,146,60,0.07);
+    --output-color: #f472b6;
+    --output-bg: rgba(244,114,182,0.07);
+    --security-color: #fbbf24;
+    --text-primary: #e8f0fe;
+    --text-secondary: #7a8fa8;
+    --text-muted: #4a5a70;
+    --arrow: rgba(255,255,255,0.25);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    font-family: 'DM Sans', sans-serif;
+    color: var(--text-primary);
+    min-height: 100vh;
+    padding: 40px 24px 60px;
+  }
+
+  /* ── HEADER ── */
+  .header {
+    text-align: center;
+    margin-bottom: 48px;
+  }
+  .header .eyebrow {
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 3px;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    margin-bottom: 12px;
+  }
+  .header h1 {
+    font-size: clamp(18px, 3vw, 28px);
+    font-weight: 600;
+    letter-spacing: -0.5px;
+    line-height: 1.2;
+    background: linear-gradient(135deg, #e8f0fe 0%, #a0c4ff 50%, #a78bfa 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .header .subtitle {
+    margin-top: 8px;
+    font-size: 13px;
+    color: var(--text-secondary);
+  }
+
+  /* ── LEGEND ── */
+  .legend {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 16px;
+    margin-bottom: 40px;
+  }
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11px;
+    color: var(--text-secondary);
+    font-family: 'Space Mono', monospace;
+  }
+  .legend-dot {
+    width: 8px; height: 8px;
+    border-radius: 2px;
+  }
+
+  /* ── MAIN LAYOUT ── */
+  .diagram {
+    max-width: 1100px;
+    margin: 0 auto;
+    position: relative;
+  }
+
+  /* Security overlay wrapper */
+  .security-wrapper {
+    display: grid;
+    grid-template-columns: 1fr 220px;
+    gap: 20px;
+    align-items: start;
+  }
+
+  .main-flow {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+  }
+
+  /* ── SECTION BLOCKS ── */
+  .section {
+    position: relative;
+    margin-bottom: 8px;
+  }
+
+  .section-label {
+    font-family: 'Space Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .section-label::before {
+    content: '';
+    display: inline-block;
+    width: 16px;
+    height: 1px;
+  }
+  .section-label::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  .section.input .section-label { color: var(--input-color); }
+  .section.input .section-label::before { background: var(--input-color); }
+  .section.process .section-label { color: var(--process-color); }
+  .section.process .section-label::before { background: var(--process-color); }
+  .section.storage .section-label { color: var(--storage-color); }
+  .section.storage .section-label::before { background: var(--storage-color); }
+  .section.intel .section-label { color: var(--intel-color); }
+  .section.intel .section-label::before { background: var(--intel-color); }
+  .section.output .section-label { color: var(--output-color); }
+  .section.output .section-label::before { background: var(--output-color); }
+
+  .cards-row {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+
+  .card {
+    border-radius: 10px;
+    padding: 14px 16px;
+    border: 1px solid var(--border);
+    flex: 1;
+    min-width: 120px;
+    position: relative;
+    overflow: hidden;
+  }
+  .card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: 10px;
+    opacity: 0.4;
+    pointer-events: none;
+  }
+
+  .section.input .card { background: var(--input-bg); border-color: rgba(0,212,255,0.2); }
+  .section.input .card .card-title { color: var(--input-color); }
+  .section.process .card { background: var(--process-bg); border-color: rgba(167,139,250,0.2); }
+  .section.process .card .card-title { color: var(--process-color); }
+  .section.storage .card { background: var(--storage-bg); border-color: rgba(52,211,153,0.2); }
+  .section.storage .card .card-title { color: var(--storage-color); }
+  .section.intel .card { background: var(--intel-bg); border-color: rgba(251,146,60,0.2); }
+  .section.intel .card .card-title { color: var(--intel-color); }
+  .section.output .card { background: var(--output-bg); border-color: rgba(244,114,182,0.2); }
+  .section.output .card .card-title { color: var(--output-color); }
+
+  .card-title {
+    font-size: 12px;
+    font-weight: 600;
+    margin-bottom: 6px;
+    font-family: 'Space Mono', monospace;
+  }
+  .card-items {
+    list-style: none;
+  }
+  .card-items li {
+    font-size: 11px;
+    color: var(--text-secondary);
+    padding: 2px 0;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .card-items li::before {
+    content: '›';
+    color: var(--text-muted);
+    font-size: 13px;
+    line-height: 1;
+  }
+  .card-badge {
+    font-size: 9px;
+    font-family: 'Space Mono', monospace;
+    padding: 2px 6px;
+    border-radius: 3px;
+    margin-top: 6px;
+    display: inline-block;
+    opacity: 0.7;
+  }
+  .section.input .card-badge { background: rgba(0,212,255,0.15); color: var(--input-color); }
+  .section.storage .card-badge { background: rgba(52,211,153,0.15); color: var(--storage-color); }
+
+  /* ── ARROWS ── */
+  .arrow-down {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 36px;
+    position: relative;
+  }
+  .arrow-down .arrow-line {
+    width: 1px;
+    height: 100%;
+    background: linear-gradient(to bottom, rgba(255,255,255,0.1), rgba(255,255,255,0.25));
+    position: relative;
+  }
+  .arrow-down .arrow-line::after {
+    content: '';
+    position: absolute;
+    bottom: -1px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 0; height: 0;
+    border-left: 5px solid transparent;
+    border-right: 5px solid transparent;
+    border-top: 7px solid rgba(255,255,255,0.3);
+  }
+  .arrow-label {
+    position: absolute;
+    right: calc(50% + 12px);
+    font-size: 9px;
+    font-family: 'Space Mono', monospace;
+    color: var(--text-muted);
+    white-space: nowrap;
+  }
+
+  /* ── CONTEXT FUSION ── */
+  .fusion-card {
+    background: linear-gradient(135deg, rgba(167,139,250,0.1) 0%, rgba(251,146,60,0.1) 100%);
+    border: 1px solid rgba(167,139,250,0.3);
+    border-radius: 12px;
+    padding: 16px 20px;
+    margin-top: 10px;
+  }
+  .fusion-card .card-title {
+    color: #c4b5fd;
+    font-size: 13px;
+    margin-bottom: 10px;
+  }
+  .fusion-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+  }
+  .fusion-item {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 6px;
+    padding: 8px 10px;
+    font-size: 10px;
+    color: var(--text-secondary);
+    text-align: center;
+  }
+  .fusion-item .fi-icon {
+    font-size: 14px;
+    display: block;
+    margin-bottom: 4px;
+  }
+
+  /* ── LLM BLOCK ── */
+  .llm-card {
+    background: linear-gradient(135deg, rgba(251,146,60,0.08) 0%, rgba(167,139,250,0.08) 100%);
+    border: 1px solid rgba(251,146,60,0.25);
+    border-radius: 12px;
+    padding: 20px;
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    gap: 16px;
+    align-items: center;
+  }
+  .llm-inputs, .llm-outputs {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .llm-chip {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 6px;
+    padding: 7px 12px;
+    font-size: 11px;
+    color: var(--text-secondary);
+  }
+  .llm-core {
+    text-align: center;
+    padding: 16px;
+    background: rgba(251,146,60,0.1);
+    border: 1px solid rgba(251,146,60,0.3);
+    border-radius: 10px;
+    min-width: 120px;
+  }
+  .llm-core .lc-title {
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    color: var(--intel-color);
+    line-height: 1.4;
+  }
+  .llm-core .lc-sub {
+    font-size: 9px;
+    color: var(--text-muted);
+    margin-top: 4px;
+  }
+  .llm-arrow {
+    font-size: 18px;
+    color: var(--text-muted);
+    line-height: 1;
+  }
+  .llm-label {
+    font-size: 10px;
+    font-family: 'Space Mono', monospace;
+    margin-bottom: 4px;
+    opacity: 0.5;
+  }
+
+  /* ── QUERY FLOW ── */
+  .query-flow {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    padding: 14px 0;
+    overflow-x: auto;
+  }
+  .qf-step {
+    flex: 1;
+    min-width: 100px;
+    text-align: center;
+  }
+  .qf-box {
+    background: var(--process-bg);
+    border: 1px solid rgba(167,139,250,0.2);
+    border-radius: 8px;
+    padding: 10px 6px;
+    font-size: 10px;
+    color: var(--text-secondary);
+    line-height: 1.4;
+  }
+  .qf-box b {
+    display: block;
+    color: var(--process-color);
+    font-size: 11px;
+    margin-bottom: 2px;
+  }
+  .qf-arrow {
+    color: var(--text-muted);
+    font-size: 18px;
+    padding: 0 4px;
+    flex-shrink: 0;
+  }
+
+  /* ── FEEDBACK LOOP ── */
+  .feedback-section {
+    margin-top: 8px;
+    border: 1px dashed rgba(255,255,255,0.12);
+    border-radius: 12px;
+    padding: 16px;
+    position: relative;
+  }
+  .feedback-label {
+    position: absolute;
+    top: -10px;
+    left: 20px;
+    background: var(--bg);
+    padding: 0 8px;
+    font-family: 'Space Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 2px;
+    color: var(--text-muted);
+    text-transform: uppercase;
+  }
+  .feedback-items {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  .feedback-chip {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 20px;
+    padding: 6px 14px;
+    font-size: 10px;
+    color: var(--text-secondary);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .feedback-chip .fc-dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--text-muted);
+    flex-shrink: 0;
+  }
+  .feedback-arrow-up {
+    text-align: center;
+    font-size: 11px;
+    color: var(--text-muted);
+    font-family: 'Space Mono', monospace;
+    margin-top: 10px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+  }
+  .fa-loop {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 20px;
+    padding: 4px 12px;
+    font-size: 9px;
+  }
+
+  /* ── SECURITY SIDEBAR ── */
+  .security-sidebar {
+    position: sticky;
+    top: 20px;
+    align-self: start;
+  }
+  .security-card {
+    background: rgba(251,191,36,0.05);
+    border: 1px solid rgba(251,191,36,0.2);
+    border-radius: 12px;
+    padding: 16px;
+    position: relative;
+  }
+  .security-card::before {
+    content: '';
+    position: absolute;
+    left: 0; top: 20%; bottom: 20%;
+    width: 2px;
+    background: linear-gradient(to bottom, transparent, var(--security-color), transparent);
+    border-radius: 2px;
+  }
+  .security-title {
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 1.5px;
+    color: var(--security-color);
+    text-transform: uppercase;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .security-items {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .security-item {
+    background: rgba(251,191,36,0.06);
+    border: 1px solid rgba(251,191,36,0.12);
+    border-radius: 8px;
+    padding: 10px 12px;
+  }
+  .security-item .si-title {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--security-color);
+    margin-bottom: 3px;
+  }
+  .security-item .si-desc {
+    font-size: 10px;
+    color: var(--text-secondary);
+    line-height: 1.5;
+  }
+  .security-scope {
+    margin-top: 12px;
+    padding: 8px;
+    background: rgba(251,191,36,0.04);
+    border-radius: 6px;
+    border: 1px dashed rgba(251,191,36,0.15);
+    font-size: 9px;
+    color: var(--text-muted);
+    text-align: center;
+    font-family: 'Space Mono', monospace;
+    line-height: 1.6;
+  }
+
+  /* ── STRUCTURED TEXT BADGE ── */
+  .convert-badge {
+    background: rgba(52,211,153,0.08);
+    border: 1px solid rgba(52,211,153,0.2);
+    border-radius: 20px;
+    padding: 6px 16px;
+    font-size: 10px;
+    font-family: 'Space Mono', monospace;
+    color: var(--storage-color);
+    text-align: center;
+    margin: 0 auto;
+    display: inline-block;
+    margin-left: 50%;
+    transform: translateX(-50%);
+  }
+
+  /* ── WIDE CARD ── */
+  .wide-section {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px 16px;
+    margin-bottom: 10px;
+  }
+  .wide-section .card-title {
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    margin-bottom: 8px;
+  }
+
+  /* Responsive */
+  @media (max-width: 768px) {
+    .security-wrapper { grid-template-columns: 1fr; }
+    .security-sidebar { position: static; }
+    .fusion-grid { grid-template-columns: repeat(2,1fr); }
+    .llm-card { grid-template-columns: 1fr; }
+    .query-flow { flex-direction: column; }
+    .qf-arrow { transform: rotate(90deg); }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="eyebrow">System Architecture v1.0</div>
+  <h1>Personal Mesh<br>Multimodal Context-Aware AI Architecture</h1>
+  <div class="subtitle">End-to-end data flow from input acquisition to intelligent output with continuous learning</div>
+</div>
+
+<div class="legend">
+  <div class="legend-item"><span class="legend-dot" style="background:var(--input-color)"></span>Input Layer</div>
+  <div class="legend-item"><span class="legend-dot" style="background:var(--process-color)"></span>Processing</div>
+  <div class="legend-item"><span class="legend-dot" style="background:var(--storage-color)"></span>Storage</div>
+  <div class="legend-item"><span class="legend-dot" style="background:var(--intel-color)"></span>Intelligence</div>
+  <div class="legend-item"><span class="legend-dot" style="background:var(--output-color)"></span>Output</div>
+  <div class="legend-item"><span class="legend-dot" style="background:var(--security-color)"></span>Security</div>
+</div>
+
+<div class="diagram">
+  <div class="security-wrapper">
+    <div class="main-flow">
+
+      <!-- S1: INPUT -->
+      <div class="section input">
+        <div class="section-label">01 &nbsp; Input Sources</div>
+        <div class="cards-row">
+          <div class="card">
+            <div class="card-title">Manual Text</div>
+            <ul class="card-items"><li>Typed queries</li><li>Notes & journals</li></ul>
+          </div>
+          <div class="card">
+            <div class="card-title">Microphone Audio</div>
+            <ul class="card-items"><li>Voice commands</li><li>Conversations</li></ul>
+          </div>
+          <div class="card">
+            <div class="card-title">Camera Images</div>
+            <ul class="card-items"><li>Photos</li><li>Documents</li><li>Visual context</li></ul>
+          </div>
+          <div class="card">
+            <div class="card-title">Wearable Data</div>
+            <ul class="card-items"><li>Health sensors</li><li>Activity data</li></ul>
+            <span class="card-badge">FUTURE-READY</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="arrow-down"><div class="arrow-line"><span class="arrow-label">raw data streams</span></div></div>
+
+      <!-- S2: PREPROCESSING -->
+      <div class="section process">
+        <div class="section-label">02 &nbsp; Data Processing Layer</div>
+        <div class="cards-row">
+          <div class="card">
+            <div class="card-title">Speech-to-Text</div>
+            <ul class="card-items"><li>Whisper model</li><li>Language detection</li><li>Transcription</li></ul>
+          </div>
+          <div class="card">
+            <div class="card-title">Vision Processing</div>
+            <ul class="card-items"><li>YOLO detection</li><li>LLaVA captioning</li><li>Object tagging</li></ul>
+          </div>
+          <div class="card" style="flex: 1.4">
+            <div class="card-title">Text Cleaning & Chunking</div>
+            <ul class="card-items">
+              <li>Timestamp tagging</li>
+              <li>Session grouping</li>
+              <li>Metadata attachment</li>
+              <li>Noise removal</li>
+            </ul>
+          </div>
+        </div>
+        <div style="margin-top:12px;">
+          <div class="convert-badge">▾ &nbsp; All outputs → Structured Text Format &nbsp; ▾</div>
+        </div>
+      </div>
+
+      <div class="arrow-down"><div class="arrow-line"><span class="arrow-label">structured text + metadata</span></div></div>
+
+      <!-- S3: STORAGE -->
+      <div class="section storage">
+        <div class="section-label">03 &nbsp; Memory Storage Layer</div>
+        <div class="cards-row">
+          <div class="card">
+            <div class="card-title">Embedding Model</div>
+            <ul class="card-items"><li>Sentence-Transformers</li><li>Dense vector generation</li><li>Semantic encoding</li></ul>
+          </div>
+          <div class="card">
+            <div class="card-title">ChromaDB</div>
+            <ul class="card-items"><li>Vector storage</li><li>Semantic indexing</li><li>Similarity search</li><li>Nearest-neighbor queries</li></ul>
+            <span class="card-badge">VECTOR DB</span>
+          </div>
+          <div class="card">
+            <div class="card-title">SQLite</div>
+            <ul class="card-items"><li>Metadata store</li><li>User profile</li><li>Health metrics</li><li>Timestamps & logs</li></ul>
+            <span class="card-badge">RELATIONAL DB</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="arrow-down"><div class="arrow-line"><span class="arrow-label">profile + embeddings</span></div></div>
+
+      <!-- S4: HEALTH & INTEL -->
+      <div class="section intel">
+        <div class="section-label">04 &nbsp; Health & Personal Intelligence Module</div>
+        <div class="cards-row">
+          <div class="card" style="flex: 1.2">
+            <div class="card-title">User Profile</div>
+            <ul class="card-items"><li>Age & weight</li><li>Goals & preferences</li><li>Lifestyle baseline</li></ul>
+          </div>
+          <div class="card">
+            <div class="card-title">Trackers</div>
+            <ul class="card-items"><li>Calorie tracker</li><li>Habit tracker</li><li>Activity logs</li></ul>
+          </div>
+          <div class="card" style="flex: 1.3">
+            <div class="card-title">Recommendation Engine</div>
+            <ul class="card-items"><li>Lifestyle scoring engine</li><li>Rule-based logic (v1)</li><li>Pattern detection</li></ul>
+          </div>
+        </div>
+      </div>
+
+      <div class="arrow-down"><div class="arrow-line"><span class="arrow-label">user query + context</span></div></div>
+
+      <!-- S5: QUERY ENGINE -->
+      <div class="section process">
+        <div class="section-label">05 &nbsp; Query & Context Engine</div>
+        <div class="query-flow">
+          <div class="qf-step"><div class="qf-box"><b>User Query</b>Input received</div></div>
+          <div class="qf-arrow">→</div>
+          <div class="qf-step"><div class="qf-box"><b>Embedding Gen</b>Query vectorized</div></div>
+          <div class="qf-arrow">→</div>
+          <div class="qf-step"><div class="qf-box"><b>Semantic Search</b>ChromaDB lookup</div></div>
+          <div class="qf-arrow">→</div>
+          <div class="qf-step"><div class="qf-box"><b>Metadata Fetch</b>SQLite retrieval</div></div>
+          <div class="qf-arrow">→</div>
+          <div class="qf-step"><div class="qf-box"><b>Context Fusion</b>Merge & rank</div></div>
+        </div>
+        <div class="fusion-card">
+          <div class="card-title" style="font-family:'Space Mono',monospace;">Context Fusion Layer</div>
+          <div class="fusion-grid">
+            <div class="fusion-item"><span class="fi-icon">⏱</span>Recency Boost</div>
+            <div class="fusion-item"><span class="fi-icon">⚖</span>Priority Weighting</div>
+            <div class="fusion-item"><span class="fi-icon">🧩</span>Behavioral Pattern Analysis</div>
+            <div class="fusion-item"><span class="fi-icon">🏆</span>Memory Ranking</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="arrow-down"><div class="arrow-line"><span class="arrow-label">fused context payload</span></div></div>
+
+      <!-- S6: LLM -->
+      <div class="section intel">
+        <div class="section-label">06 &nbsp; LLM Processing – Mini-LLM with RAG</div>
+        <div class="llm-card">
+          <div class="llm-inputs">
+            <div class="llm-label">INPUTS</div>
+            <div class="llm-chip">💬 User Query</div>
+            <div class="llm-chip">🧠 Retrieved Memories</div>
+            <div class="llm-chip">👤 User Profile Data</div>
+            <div class="llm-chip">❤️ Health Insights</div>
+          </div>
+          <div style="display:flex;flex-direction:column;align-items:center;gap:8px">
+            <div class="llm-arrow">→</div>
+            <div class="llm-core">
+              <div class="lc-title">Mini-LLM<br>+ RAG<br>Pipeline</div>
+              <div class="lc-sub">Grounded generation</div>
+            </div>
+            <div class="llm-arrow">→</div>
+          </div>
+          <div class="llm-outputs">
+            <div class="llm-label">OUTPUTS</div>
+            <div class="llm-chip">✅ Contextual Answer</div>
+            <div class="llm-chip">💡 Recommendations</div>
+            <div class="llm-chip">📋 Summaries</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="arrow-down"><div class="arrow-line"><span class="arrow-label">rendered response</span></div></div>
+
+      <!-- S7: OUTPUT -->
+      <div class="section output">
+        <div class="section-label">07 &nbsp; User Interface</div>
+        <div class="cards-row">
+          <div class="card">
+            <div class="card-title">Streamlit Dashboard</div>
+            <ul class="card-items"><li>Visual overview</li><li>Data panels</li></ul>
+          </div>
+          <div class="card">
+            <div class="card-title">Chat Interface</div>
+            <ul class="card-items"><li>Conversational UI</li><li>Memory recall</li></ul>
+          </div>
+          <div class="card">
+            <div class="card-title">Analytics View</div>
+            <ul class="card-items"><li>Health trends</li><li>Usage insights</li></ul>
+          </div>
+          <div class="card">
+            <div class="card-title">Weekly Reports</div>
+            <ul class="card-items"><li>Summary generation</li><li>Progress tracking</li></ul>
+          </div>
+        </div>
+      </div>
+
+      <!-- FEEDBACK LOOP -->
+      <div class="feedback-section">
+        <div class="feedback-label">08 – Feedback & Continuous Learning</div>
+        <div class="feedback-items">
+          <div class="feedback-chip"><div class="fc-dot" style="background:var(--storage-color)"></div>Metadata Update</div>
+          <div class="feedback-chip"><div class="fc-dot" style="background:var(--process-color)"></div>Embedding Update</div>
+          <div class="feedback-chip"><div class="fc-dot" style="background:var(--intel-color)"></div>Habit Score Adjustment</div>
+        </div>
+        <div class="feedback-arrow-up">
+          <div class="fa-loop">↑ &nbsp; Feedback loop back to Storage &amp; Intelligence layers</div>
+        </div>
+      </div>
+
+    </div><!-- end main-flow -->
+
+    <!-- SECURITY SIDEBAR -->
+    <div class="security-sidebar">
+      <div class="security-card">
+        <div class="security-title">🔒 Security & Privacy Layer</div>
+        <div class="security-items">
+          <div class="security-item">
+            <div class="si-title">Local Data Encryption</div>
+            <div class="si-desc">All stored data encrypted at rest. Keys managed locally.</div>
+          </div>
+          <div class="security-item">
+            <div class="si-title">Access Control</div>
+            <div class="si-desc">Role-based permissions. Session authentication required.</div>
+          </div>
+          <div class="security-item">
+            <div class="si-title">Offline-First Architecture</div>
+            <div class="si-desc">No cloud dependency. Data never leaves the device without explicit consent.</div>
+          </div>
+        </div>
+        <div class="security-scope">Wraps Storage Layer<br>↕<br>User Profile &amp; Health Engine<br><br>Zero-trust boundary enforced</div>
+      </div>
+    </div>
+
+  </div><!-- end security-wrapper -->
+</div><!-- end diagram -->
+
+</body>
+</html>
