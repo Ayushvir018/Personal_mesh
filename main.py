@@ -1,6 +1,5 @@
 import sqlite3
 
-<<<<<<< HEAD
 def add_memory(content, user_id, mem_type, priority, date=None):
     conn = sqlite3.connect("memories.db")
     cursor = conn.cursor()
@@ -16,15 +15,6 @@ def add_memory(content, user_id, mem_type, priority, date=None):
             (content, user_id, mem_type, priority)
         )
     
-=======
-def add_memory(content, user_id, mem_type, priority):
-    conn = sqlite3.connect("memories.db")
-    cursor = conn.cursor()
-    cursor.execute(
-        "INSERT INTO memories (content, user_id, type, priority) VALUES (?, ?, ?, ?)",
-        (content, user_id, mem_type, priority)
-    )
->>>>>>> 20d2d25ae727738a57c03989abfac9f28daa0d60
     conn.commit()
     conn.close()
     print("Memory saved.")
@@ -62,7 +52,6 @@ def search_memory(keyword):
         print(f"[{row[0]}] {row[1]} | {row[4]} | {row[5]} | {row[2]}")
     conn.close()
 
-<<<<<<< HEAD
 def edit_memory(memory_id, new_content):
     conn = sqlite3.connect("memories.db")
     cursor = conn.cursor()
@@ -86,8 +75,7 @@ def delete_memory(memory_id):
     conn.close()
     print("Memory deleted.")
 
-=======
->>>>>>> 20d2d25ae727738a57c03989abfac9f28daa0d60
+
 def filter_by_date(date):
     conn = sqlite3.connect("memories.db")
     cursor = conn.cursor()
@@ -101,7 +89,6 @@ def filter_by_date(date):
     conn.close()
 
 # ALL calls here at the bottom
-<<<<<<< HEAD
 def menu():
     while True:
         print("\n=== Personal Mesh Memory System ===")
@@ -156,6 +143,3 @@ def menu():
         else:
             print("Invalid choice. Please enter a number between 1 and 6.")
 menu()
-=======
-filter_by_date("2026-03-16")
->>>>>>> 20d2d25ae727738a57c03989abfac9f28daa0d60
