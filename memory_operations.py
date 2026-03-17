@@ -1,5 +1,6 @@
 import sqlite3
 from datetime import datetime
+from embedding import add_embedding
 
 def add_memory(content, user_id="ayush", mem_type="personal", priority="medium", date=None, tags=""):
     conn = sqlite3.connect("memories.db")
@@ -15,6 +16,8 @@ def add_memory(content, user_id="ayush", mem_type="personal", priority="medium",
             "INSERT INTO memories (content, user_id, type, priority, tags) VALUES (?, ?, ?, ?, ?)",
             (content, user_id, mem_type, priority, tags)
         )
+    memory_id = cursor.lastrowid
+    add_embedding(memory_id, content)
     
     conn.commit()
     conn.close()
@@ -126,6 +129,52 @@ def get_stats():
         'by_priority': by_priority,
         'recent': recent
     }
+def smart_search(query):
+    """
+    Search memories intelligently using multiple strategies
+    Returns combined results
+    """
+    conn = sqlite3.connect("memories.db")
+    cursor = conn.cursor()
+    
+    # Strategy 1: Keyword search in content
+    cursor.execute(
+        "SELECT * FROM memories WHERE content LIKE ? ORDER BY timestamp DESC LIMIT 10",
+        ('%' + query + '%',)
+    )
+    keyword_results = cursor.fetchall()
+    
+    # Strategy 2: Search in tags
+    cursor.execute(
+        "SELECT * FROM memories WHERE tags LIKE ? ORDER BY timestamp DESC LIMIT 10",
+        ('%' + query + '%',)
+    )
+    tag_results = cursor.fetchall()
+    
+    conn.close()
+    
+    # Combine and deduplicate
+    all_results = list(keyword_results) + list(tag_results)
+    seen_ids = set()
+    unique_results = []
+    
+    for mem in all_results:
+        if mem[0] not in seen_ids:
+            seen_ids.add(mem[0])
+            unique_results.append(mem)
+            
+    # Provide fallback if no unique results found
+    if not unique_results:
+        # We need a new connection since the previous one was closed
+        conn = sqlite3.connect("memories.db")
+        cursor = conn.cursor()
+        cursor.execute("SELECT * FROM memories ORDER BY timestamp DESC LIMIT 20")
+        fallback_results = cursor.fetchall()
+        conn.close()
+        return fallback_results
+    
+    return unique_results[:20]  # Return top 20 instead of 10 for better context
+
 
 def search_by_tag(tag):
     """Search memories by tag"""

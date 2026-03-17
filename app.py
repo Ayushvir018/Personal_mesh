@@ -1,6 +1,7 @@
 import streamlit as st
 from memory_operations import *
 from datetime import date
+from llm_handler import ask_about_memories
 
 st.set_page_config(page_title="Personal Mesh", page_icon="🧠", layout="wide")
 
@@ -14,7 +15,7 @@ with st.sidebar:
     st.header("📋 Actions")
     action = st.radio(
     "Choose an action:",
-    ["📊 Dashboard", "📝 Add Memory", "👁️ View All", "🔍 Search", "🗂️ Filter by Type", "📅 Filter by Date", "🏷️ Browse by Tags", "✏️ Edit", "🗑️ Delete"]
+    ["📊 Dashboard", "📝 Add Memory", "👁️ View All", "🔍 Search", "🗂️ Filter by Type", "📅 Filter by Date", "🏷️ Browse by Tags", "🤖 Ask AI", "✏️ Edit", "🗑️ Delete"]
 )
 
 # Main content area
@@ -90,6 +91,32 @@ if action == "📊 Dashboard":
         st.plotly_chart(fig, use_container_width=True)
     else:
         st.info("No recent activity")
+
+elif action == "💬 Ask AI":
+    st.subheader("💬 Ask AI About Your Memories")
+    
+    st.info("💡 Ask questions like: 'What projects did I work on?', 'Summarize my week', 'What are my health goals?'")
+    
+    question = st.text_input("Your question:", placeholder="What did I do yesterday?")
+    
+    if st.button("🤖 Ask", type="primary") and question:
+        with st.spinner("Thinking..."):
+            # Smart search for relevant memories
+            relevant_memories = smart_search(question)
+            
+            if relevant_memories:
+                # Get AI response
+                answer = ask_about_memories(question, relevant_memories)
+                
+                st.success("**Answer:**")
+                st.write(answer)
+                
+                # Show sources
+                with st.expander("📚 Sources (memories used)"):
+                    for mem in relevant_memories:
+                        st.write(f"• [{mem[0]}] {mem[1][:80]}... ({mem[2]})")
+            else:
+                st.warning("No relevant memories found for this question.")
 
 elif action == "📝 Add Memory":
     st.subheader("Add New Memory")
@@ -215,6 +242,38 @@ elif action == "🏷️ Browse by Tags":
                         st.write(f"**Date:** {mem[2]}")
     else:
         st.info("No tags yet. Add tags when creating memories!")
+
+elif action == "🤖 Ask AI":
+    st.subheader("🤖 Ask Personal Mesh AI")
+    st.markdown("Ask anything about your life, projects, or memories.")
+    
+    # Initialize chat history
+    if "chat_history" not in st.session_state:
+        st.session_state.chat_history = []
+    
+    # Display chat history
+    for msg in st.session_state.chat_history:
+        if msg["role"] == "user":
+            st.chat_message("user").write(msg["content"])
+        else:
+            st.chat_message("assistant").write(msg["content"])
+    
+    # Input
+    question = st.chat_input("Ask something...")
+    
+    if question:
+        # Add user message to history
+        st.session_state.chat_history.append({"role": "user", "content": question})
+        st.chat_message("user").write(question)
+        
+        # Get answer
+        with st.spinner("Thinking..."):
+            from rag import ask_personal_mesh
+            answer = ask_personal_mesh(question)
+        
+        # Add answer to history
+        st.session_state.chat_history.append({"role": "assistant", "content": answer})
+        st.chat_message("assistant").write(answer)
 
 elif action == "✏️ Edit":
     st.subheader("Edit Memory")
