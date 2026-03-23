@@ -24,45 +24,48 @@ def add_memory(content, user_id="ayush", mem_type="personal", priority="medium",
     return "✅ Memory saved successfully!"
 
 
-def get_all_memories():
-    conn = sqlite3.connect("memories.db")
-    cursor = conn.cursor()
-    cursor.execute("SELECT * FROM memories ORDER BY timestamp DESC")
-    rows = cursor.fetchall()
-    conn.close()
-    return rows
-
-
-def filter_by_type(mem_type):
+def get_all_memories(user_id="ayush"):
     conn = sqlite3.connect("memories.db")
     cursor = conn.cursor()
     cursor.execute(
-        "SELECT * FROM memories WHERE type = ? ORDER BY timestamp DESC",
-        (mem_type,)
+        "SELECT * FROM memories WHERE user_id = ? ORDER BY timestamp DESC",
+        (user_id,)
     )
     rows = cursor.fetchall()
     conn.close()
     return rows
 
 
-def search_memory(keyword):
+def filter_by_type(mem_type, user_id="ayush"):
     conn = sqlite3.connect("memories.db")
     cursor = conn.cursor()
     cursor.execute(
-        "SELECT * FROM memories WHERE content LIKE ? ORDER BY timestamp DESC",
-        ('%' + keyword + '%',)
+        "SELECT * FROM memories WHERE type = ? AND user_id = ? ORDER BY timestamp DESC",
+        (mem_type, user_id)
     )
     rows = cursor.fetchall()
     conn.close()
     return rows
 
 
-def filter_by_date(date):
+def search_memory(keyword, user_id="ayush"):
     conn = sqlite3.connect("memories.db")
     cursor = conn.cursor()
     cursor.execute(
-        "SELECT * FROM memories WHERE DATE(timestamp) = ? ORDER BY timestamp DESC",
-        (date,)
+        "SELECT * FROM memories WHERE content LIKE ? AND user_id = ? ORDER BY timestamp DESC",
+        ('%' + keyword + '%', user_id)
+    )
+    rows = cursor.fetchall()
+    conn.close()
+    return rows
+
+
+def filter_by_date(date, user_id="ayush"):
+    conn = sqlite3.connect("memories.db")
+    cursor = conn.cursor()
+    cursor.execute(
+        "SELECT * FROM memories WHERE DATE(timestamp) = ? AND user_id = ? ORDER BY timestamp DESC",
+        (date, user_id)
     )
     rows = cursor.fetchall()
     conn.close()
@@ -94,31 +97,32 @@ def edit_memory(memory_id, new_content):
         return "✅ Memory updated successfully!"
     except:
         return "❌ Error: Invalid ID"
-def get_stats():
-    """Get overall statistics"""
+def get_stats(user_id="ayush"):
     conn = sqlite3.connect("memories.db")
     cursor = conn.cursor()
     
-    # Total count
-    cursor.execute("SELECT COUNT(*) FROM memories")
+    cursor.execute("SELECT COUNT(*) FROM memories WHERE user_id = ?", (user_id,))
     total = cursor.fetchone()[0]
     
-    # Count by type
-    cursor.execute("SELECT type, COUNT(*) FROM memories GROUP BY type")
+    cursor.execute(
+        "SELECT type, COUNT(*) FROM memories WHERE user_id = ? GROUP BY type",
+        (user_id,)
+    )
     by_type = cursor.fetchall()
     
-    # Count by priority
-    cursor.execute("SELECT priority, COUNT(*) FROM memories GROUP BY priority")
+    cursor.execute(
+        "SELECT priority, COUNT(*) FROM memories WHERE user_id = ? GROUP BY priority",
+        (user_id,)
+    )
     by_priority = cursor.fetchall()
     
-    # Recent memories (last 7 days)
     cursor.execute("""
         SELECT DATE(timestamp), COUNT(*) 
         FROM memories 
-        WHERE DATE(timestamp) >= DATE('now', '-7 days')
+        WHERE user_id = ? AND DATE(timestamp) >= DATE('now', '-7 days')
         GROUP BY DATE(timestamp)
         ORDER BY DATE(timestamp)
-    """)
+    """, (user_id,))
     recent = cursor.fetchall()
     
     conn.close()

@@ -9,6 +9,50 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
+from auth import login_user, register_user
+
+# ── Authentication ──────────────────────────────────────────────────────────
+if "logged_in" not in st.session_state:
+    st.session_state.logged_in = False
+    st.session_state.current_user = None
+
+if not st.session_state.logged_in:
+    st.markdown("""
+    <div style="max-width:400px; margin: 5rem auto; text-align:center;">
+        <h1 style="font-family:'Syne',sans-serif; background:linear-gradient(135deg,#00d4aa,#0088ff);
+        -webkit-background-clip:text; -webkit-text-fill-color:transparent; font-size:2rem;">
+        ⬡ PERSONAL MESH</h1>
+        <p style="color:#4a6080; font-size:0.75rem; letter-spacing:0.15em;">YOUR AI MEMORY LAYER</p>
+    </div>
+    """, unsafe_allow_html=True)
+
+    tab_login, tab_register = st.tabs(["Login", "Register"])
+
+    with tab_login:
+        username = st.text_input("Username", key="login_user")
+        password = st.text_input("Password", type="password", key="login_pass")
+        if st.button("Login"):
+            success, msg = login_user(username, password)
+            if success:
+                st.session_state.logged_in = True
+                st.session_state.current_user = username
+                st.rerun()
+            else:
+                st.error(msg)
+
+    with tab_register:
+        new_user = st.text_input("Username", key="reg_user")
+        new_pass = st.text_input("Password", type="password", key="reg_pass")
+        if st.button("Register"):
+            success, msg = register_user(new_user, new_pass)
+            if success:
+                st.success(msg)
+                st.info("Ab login karo.")
+            else:
+                st.error(msg)
+
+    st.stop()
+
 # ── Custom CSS ──────────────────────────────────────────────────────────────
 st.markdown("""
 <style>
@@ -312,7 +356,7 @@ with st.sidebar:
 
     # Quick stats in sidebar
     try:
-        stats = get_stats()
+        stats = get_stats(st.session_state.current_user)
         total = stats['total']
         st.markdown(f"""
         <div style="padding: 0.5rem 0; font-size: 0.75rem; color: var(--muted);">
@@ -324,6 +368,14 @@ with st.sidebar:
         """, unsafe_allow_html=True)
     except:
         pass
+
+    st.markdown("---")
+    st.markdown(f'<div style="font-size:0.75rem; color:var(--muted);">👤 {st.session_state.current_user}</div>', unsafe_allow_html=True)
+    if st.button("Logout"):
+        st.session_state.logged_in = False
+        st.session_state.current_user = None
+        st.session_state.chat_history = []
+        st.rerun()
 
 
 # ── CHAT PAGE ─────────────────────────────────────────────────────────────────
@@ -450,7 +502,7 @@ elif "Memory" in page:
 
         if st.button("Save Memory"):
             if content.strip():
-                result = add_memory(content, user_id, mem_type, priority, str(mem_date), tags)
+                result = add_memory(content, st.session_state.current_user, mem_type, priority, str(mem_date), tags)
                 st.success(result)
                 st.session_state.voice_transcript = ""
             else:
@@ -467,7 +519,7 @@ elif "Memory" in page:
         with col2:
             type_filter = st.selectbox("", ["all", "project", "personal", "health", "work"], label_visibility="collapsed")
 
-        memories = get_all_memories()
+        memories = get_all_memories(st.session_state.current_user)
 
         if search_q:
             memories = [m for m in memories if search_q.lower() in m[1].lower()]
@@ -498,7 +550,7 @@ elif "Memory" in page:
     with tab3:
         st.markdown('<div style="height:1rem"></div>', unsafe_allow_html=True)
         try:
-            stats = get_stats()
+            stats = get_stats(st.session_state.current_user)
 
             total = stats['total']
             project_count = sum([c for t, c in stats['by_type'] if t == 'project'])
