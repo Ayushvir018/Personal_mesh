@@ -2,7 +2,7 @@ from embedding import search_similar
 from openai import OpenAI
 
 client = OpenAI(
-    base_url="http://10.21.70.165:1234/v1",
+    base_url="http://10.21.70.156:1234/v1",
     api_key="lm-studio"
 )
 

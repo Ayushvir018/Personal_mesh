@@ -368,8 +368,29 @@ if "Chat" in page:
         </div>
         """, unsafe_allow_html=True)
 
-    # Chat input
-    question = st.chat_input("Ask something about your memories...")
+    # Voice in chat
+    col_chat, col_voice = st.columns([6, 1])
+
+    with col_voice:
+        voice_chat_btn = st.button("🎙️")
+
+    with col_chat:
+        question = st.chat_input("Ask something about your memories...")
+
+    if voice_chat_btn:
+        with st.spinner("Recording 5s... speak now!"):
+            from voice_input import voice_to_text
+            question = voice_to_text(duration=5)
+        if question:
+            st.session_state.chat_history.append({"role": "user", "content": question})
+            with st.spinner(""):
+                try:
+                    from rag import ask_personal_mesh
+                    answer = ask_personal_mesh(question)
+                except Exception as e:
+                    answer = f"Error: {str(e)}"
+            st.session_state.chat_history.append({"role": "assistant", "content": answer})
+            st.rerun()
 
     if question:
         st.session_state.chat_history.append({"role": "user", "content": question})
@@ -396,7 +417,26 @@ elif "Memory" in page:
         st.markdown('<div class="page-title" style="font-size:1.3rem">New Memory</div>', unsafe_allow_html=True)
         st.markdown('<div style="height:1rem"></div>', unsafe_allow_html=True)
 
-        content = st.text_area("What happened?", height=120, placeholder="Describe your memory...")
+        # Voice input at top
+        col_mic, col_dur = st.columns([2, 1])
+        with col_mic:
+            record_btn = st.button("🎙️ Record Voice Memory")
+        with col_dur:
+            duration = st.selectbox("Duration", [5, 10, 15, 30], index=1, label_visibility="collapsed")
+
+        if record_btn:
+            with st.spinner(f"Recording {duration}s... speak now!"):
+                from voice_input import voice_to_text
+                transcript = voice_to_text(duration=duration)
+            if transcript:
+                st.session_state.voice_transcript = transcript
+            else:
+                st.warning("Could not hear anything. Check your mic.")
+
+        # Pre-fill content from voice if available
+        default_content = st.session_state.get("voice_transcript", "")
+
+        content = st.text_area("What happened?", value=default_content, height=120, placeholder="Describe your memory or record voice above...")
 
         col1, col2 = st.columns(2)
         with col1:
@@ -412,8 +452,10 @@ elif "Memory" in page:
             if content.strip():
                 result = add_memory(content, user_id, mem_type, priority, str(mem_date), tags)
                 st.success(result)
+                st.session_state.voice_transcript = ""
             else:
                 st.error("Please enter some content.")
+
 
     # ── BROWSE TAB
     with tab2:

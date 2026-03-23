@@ -3,7 +3,7 @@ import json
 
 def ask_llm(prompt, max_tokens=300, temperature=0.7):
     """Send prompt to local LLM (LM Studio) and get response"""
-    url = "http://10.21.70.165:1234/v1/completions"
+    url = "http://10.21.70.156:1234/v1/completions"
     
     data = {
         "prompt": prompt,
