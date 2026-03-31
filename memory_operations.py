@@ -133,25 +133,24 @@ def get_stats(user_id="ayush"):
         'by_priority': by_priority,
         'recent': recent
     }
-def smart_search(query):
+def smart_search(query, user_id):
     """
-    Search memories intelligently using multiple strategies
-    Returns combined results
+    Search memories intelligently using multiple strategies for a specific user
     """
     conn = sqlite3.connect("memories.db")
     cursor = conn.cursor()
     
     # Strategy 1: Keyword search in content
     cursor.execute(
-        "SELECT * FROM memories WHERE content LIKE ? ORDER BY timestamp DESC LIMIT 10",
-        ('%' + query + '%',)
+        "SELECT * FROM memories WHERE content LIKE ? AND user_id = ? ORDER BY timestamp DESC LIMIT 10",
+        ('%' + query + '%', user_id)
     )
     keyword_results = cursor.fetchall()
     
     # Strategy 2: Search in tags
     cursor.execute(
-        "SELECT * FROM memories WHERE tags LIKE ? ORDER BY timestamp DESC LIMIT 10",
-        ('%' + query + '%',)
+        "SELECT * FROM memories WHERE tags LIKE ? AND user_id = ? ORDER BY timestamp DESC LIMIT 10",
+        ('%' + query + '%', user_id)
     )
     tag_results = cursor.fetchall()
     
@@ -172,7 +171,7 @@ def smart_search(query):
         # We need a new connection since the previous one was closed
         conn = sqlite3.connect("memories.db")
         cursor = conn.cursor()
-        cursor.execute("SELECT * FROM memories ORDER BY timestamp DESC LIMIT 20")
+        cursor.execute("SELECT * FROM memories WHERE user_id = ? ORDER BY timestamp DESC LIMIT 20", (user_id,))
         fallback_results = cursor.fetchall()
         conn.close()
         return fallback_results
@@ -180,24 +179,24 @@ def smart_search(query):
     return unique_results[:20]  # Return top 20 instead of 10 for better context
 
 
-def search_by_tag(tag):
-    """Search memories by tag"""
+def search_by_tag(tag, user_id):
+    """Search memories by tag for a specific user"""
     conn = sqlite3.connect("memories.db")
     cursor = conn.cursor()
     cursor.execute(
-        "SELECT * FROM memories WHERE tags LIKE ? ORDER BY timestamp DESC",
-        ('%' + tag + '%',)
+        "SELECT * FROM memories WHERE tags LIKE ? AND user_id = ? ORDER BY timestamp DESC",
+        ('%' + tag + '%', user_id)
     )
     rows = cursor.fetchall()
     conn.close()
     return rows
 
 
-def get_all_tags():
-    """Get all unique tags"""
+def get_all_tags(user_id):
+    """Get all unique tags for a specific user"""
     conn = sqlite3.connect("memories.db")
     cursor = conn.cursor()
-    cursor.execute("SELECT tags FROM memories WHERE tags != ''")
+    cursor.execute("SELECT tags FROM memories WHERE user_id = ? AND tags != ''", (user_id,))
     rows = cursor.fetchall()
     conn.close()
     

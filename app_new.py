@@ -76,8 +76,10 @@ html, body, [data-testid="stAppViewContainer"] {
     font-family: 'JetBrains Mono', monospace !important;
 }
 
-/* Hide default Streamlit elements */
-#MainMenu, footer, header { visibility: hidden; }
+/* Hide default Streamlit elements, but KEEP header for sidebar toggle */
+#MainMenu, footer { visibility: hidden; }
+header { background: transparent !important; }
+[data-testid="stHeader"] { background: transparent !important; }
 [data-testid="stDecoration"] { display: none; }
 
 /* Sidebar */
@@ -346,11 +348,17 @@ with st.sidebar:
 
     st.markdown("---")
 
+    if "page" not in st.session_state:
+        st.session_state.page = "💬  Chat"
+
     page = st.radio(
         "",
         ["💬  Chat", "🧠  Memory"],
-        label_visibility="collapsed"
+        index=0 if st.session_state.page == "💬  Chat" else 1,
+        label_visibility="collapsed",
+        key="nav_radio"
     )
+    st.session_state.page = page
 
     st.markdown("---")
 
@@ -379,7 +387,7 @@ with st.sidebar:
 
 
 # ── CHAT PAGE ─────────────────────────────────────────────────────────────────
-if "Chat" in page:
+if "Chat" in st.session_state.page:
 
     st.markdown('<div class="page-title">Ask Personal Mesh</div>', unsafe_allow_html=True)
     st.markdown('<div class="page-subtitle">Your AI — powered by your memories</div>', unsafe_allow_html=True)
@@ -412,13 +420,17 @@ if "Chat" in page:
             <div style="font-family: 'Syne', sans-serif; font-size: 1.1rem; color: var(--text); margin-bottom: 0.5rem;">
                 Ask me anything about your life
             </div>
-            <div style="font-size: 0.8rem; line-height: 1.8;">
+            <div style="font-size: 0.8rem; line-height: 1.8; margin-bottom: 2rem;">
                 "What projects have I built?"<br>
                 "Tell me about my hackathon performance"<br>
                 "What are my skills?"
             </div>
         </div>
         """, unsafe_allow_html=True)
+        
+        if st.button("➕ Go to Memory Section to add data", use_container_width=True):
+            st.session_state.page = "🧠  Memory"
+            st.rerun()
 
     # Voice in chat
     col_chat, col_voice = st.columns([6, 1])
@@ -442,6 +454,14 @@ if "Chat" in page:
                 except Exception as e:
                     answer = f"Error: {str(e)}"
             st.session_state.chat_history.append({"role": "assistant", "content": answer})
+            
+            # PROMPT TO ADD MEMORY
+            if "add some memories first" in answer.lower():
+                st.info("💡 Tip: You can add memories from the 'Memory' tab in the sidebar.")
+                if st.button("Go to Memory Section ➔", key="voice_nav_btn"):
+                    st.session_state.page = "🧠  Memory"
+                    st.rerun()
+            
             st.rerun()
 
     if question:
@@ -455,11 +475,19 @@ if "Chat" in page:
                 answer = f"Error connecting to AI: {str(e)}"
 
         st.session_state.chat_history.append({"role": "assistant", "content": answer})
+        
+        # PROMPT TO ADD MEMORY
+        if "add some memories first" in answer.lower():
+            st.info("💡 Tip: You can add memories from the 'Memory' tab in the sidebar.")
+            if st.button("Go to Memory Section ➔"):
+                st.session_state.page = "🧠  Memory"
+                st.rerun()
+        
         st.rerun()
 
 
 # ── MEMORY PAGE ───────────────────────────────────────────────────────────────
-elif "Memory" in page:
+elif "Memory" in st.session_state.page:
 
     tab1, tab2, tab3 = st.tabs(["＋  Add", "  Browse", "  Stats"])
 
@@ -495,7 +523,6 @@ elif "Memory" in page:
             mem_type = st.selectbox("Type", ["project", "personal", "health", "work"])
             priority = st.selectbox("Priority", ["medium", "high", "low"])
         with col2:
-            user_id = st.text_input("User", value="ayush")
             mem_date = st.date_input("Date", value=date.today())
 
         tags = st.text_input("Tags", placeholder="ai, project, health ...")
@@ -503,6 +530,7 @@ elif "Memory" in page:
         if st.button("Save Memory"):
             if content.strip():
                 result = add_memory(content, st.session_state.current_user, mem_type, priority, str(mem_date), tags)
+
                 st.success(result)
                 st.session_state.voice_transcript = ""
             else:
