@@ -1,7 +1,12 @@
+import streamlit as st
 from sentence_transformers import SentenceTransformer
 import chromadb
 
-model=SentenceTransformer('all-MiniLM-L6-v2')
+@st.cache_resource
+def load_model():
+    return SentenceTransformer('all-MiniLM-L6-v2')
+
+model = load_model()
 client=chromadb.PersistentClient(path="./chroma_db")
 collection=client.get_or_create_collection(name="memories")
 
