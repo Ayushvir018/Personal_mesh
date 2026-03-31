@@ -1,6 +1,39 @@
 import streamlit as st
+import sqlite3
+import os
 from memory_operations import *
 from datetime import date
+
+# Initialize database on first run
+if not os.path.exists("memories.db"):
+    conn = sqlite3.connect("memories.db")
+    cursor = conn.cursor()
+    
+    # Create users table
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS users (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        username TEXT UNIQUE NOT NULL,
+        password TEXT NOT NULL,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    )
+    """)
+    
+    # Create memories table
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS memories (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        content TEXT NOT NULL,
+        timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
+        user_id TEXT DEFAULT 'ayush',
+        type TEXT DEFAULT 'personal',
+        priority TEXT DEFAULT 'medium',
+        tags TEXT DEFAULT ''
+    )
+    """)
+    
+    conn.commit()
+    conn.close()
 
 st.set_page_config(
     page_title="Personal Mesh",
